@@ -5,7 +5,7 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Dynamic KPI Dashboard by Daivik Awasthi</title>
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
    <style>
@@ -258,103 +258,100 @@
 
 
    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
 
-       function toggleSidebar() {
-           const sidebar = document.getElementById('sidebar');
-           const content = document.getElementById('content');
-           if (sidebar.style.left === '-250px') {
-               sidebar.style.left = '0';
-               content.style.marginLeft = '250px';
-           } else {
-               sidebar.style.left = '-250px';
-               content.style.marginLeft = '0';
-           }
-       }
+        if (sidebar.style.left === '-250px') {
+            sidebar.style.left = '0';
+            content.style.marginLeft = '250px';
+        } else {
+            sidebar.style.left = '-250px';
+            content.style.marginLeft = '0';
+        }
+    }
 
+    function logout() {
+        alert("Fir se login karo :)");
+        location.reload();
+    }
 
-       function logout() {
-           alert("Fir se login karo :)");
-           location.reload(); 
-       }
+    const lineCtx = document.getElementById('line-chart').getContext('2d');
+    const pieCtx = document.getElementById('pie-chart').getContext('2d');
 
+    const lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Real-Time Data',
+                data: [],
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            }]
+        },
+        options: { 
+            scales: { 
+                y: { beginAtZero: true } 
+            }
+        }
+    });
 
-       const lineCtx = document.getElementById('line-chart').getContext('2d');
-       const pieCtx = document.getElementById('pie-chart').getContext('2d');
+    const pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['0-2', '3-5', '6-10'],
+            datasets: [{
+                data: [0, 0, 0], 
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            }]
+        },
+        options: {
+            maintainAspectRatio: true,
+            responsive: true,
+        }
+    });
 
+    let globalIndex = 0; 
+    let lowCount = 0, mediumCount = 0, highCount = 0;
 
-       const lineChart = new Chart(lineCtx, {
-           type: 'line',
-           data: {
-               labels: [],
-               datasets: [{
-                   label: 'Real-Time Data',
-                   data: [],
-                   borderColor: '#36A2EB',
-                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
-               }]
-           },
-           options: { scales: { y: { beginAtZero: true } } }
-       });
+    const socket = io('https://data.gdscnsut.com'); 
 
+    socket.on('random_number', function(data) {
+        const value = data.number;
+        globalIndex++;
+       
+        lineChart.data.labels.push(globalIndex);
+        lineChart.data.datasets[0].data.push(value);
+        lineChart.update();
 
-       const pieChart = new Chart(pieCtx, {
-           type: 'pie',
-           data: {
-               labels: ['0-2', '3-5', '6-10'],
-               datasets: [{
-                   data: [0, 0, 0], 
-                   backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-               }]
-           },
-           options: {
-               maintainAspectRatio: true,
-               responsive: true,
-           }
-       });
+        const row = `<tr><td>${globalIndex}</td><td>${value}</td></tr>`;
+        document.getElementById('data-table').insertAdjacentHTML('beforeend', row);
 
+        if (lineChart.data.labels.length > 10) {
+            lineChart.data.labels.shift();
+            lineChart.data.datasets[0].data.shift();
+            document.getElementById('data-table').deleteRow(0);
+        }
 
-       let globalIndex = 0; 
-       let lowCount = 0, mediumCount = 0, highCount = 0; 
+        if (value < 3) {
+            lowCount++;
+        } else if (value < 6) {
+            mediumCount++;
+        } else {
+            highCount++;
+        }
 
-       const socket = io('https://data.gdscnsut.com');
-  
-       socket.on('random_number', function(data) {
-           const value = data.number;
-           globalIndex++;
+        pieChart.data.datasets[0].data = [lowCount, mediumCount, highCount];
+        pieChart.update();
+    });
 
+    socket.on('pie_data', function(data) {
+        pieChart.data.labels = data.labels;
+        pieChart.data.datasets[0].data = data.values;
+        pieChart.update();
+    });
 
-           lineChart.data.labels.push(globalIndex);
-           lineChart.data.datasets[0].data.push(value);
-           lineChart.update();
-
-
-           const row = `<tr><td>${globalIndex}</td><td>${value}</td></tr>`;
-           document.getElementById('data-table').insertAdjacentHTML('beforeend', row);
-
-
-           if (lineChart.data.labels.length > 10) {
-               lineChart.data.labels.shift();
-               lineChart.data.datasets[0].data.shift();
-               document.getElementById('data-table').deleteRow(0);
-           }
-
-           if (value < 3) {
-               lowCount++;
-           } else if (value < 6) {
-               mediumCount++;
-           } else {
-               highCount++;
-           }
-
-           pieChart.data.datasets[0].data = [lowCount, mediumCount, highCount];
-           pieChart.update();
-       });
-
-       socket.on('pie_data', function(data) {
-           pieChart.data.labels = data.labels;
-           pieChart.data.datasets[0].data = data.values;
-           pieChart.update();
-       });
    </script>
 </body>
 </html>
