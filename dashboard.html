@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Dynamic KPI Dashboard by Daivik Awasthi</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+   <style>
+       body, html {
+           margin: 0;
+           padding: 0;
+           font-family: 'nunito', sans-serif;
+           background-color: #f4f5f7;
+       }
+
+       .sidebar {
+           height: 100vh;
+           width: 250px;
+           background-color: #031d44;
+           position: fixed;
+           top: 0;
+           left: -250px;
+           transition: 0.3s;
+           padding-top: 60px;
+       }
+
+
+       .sidebar a {
+           padding: 15px 30px;
+           display: block;
+           color: #ecf0f1;
+           text-decoration: none;
+       }
+
+
+       .sidebar a:hover {
+           background-color: #34495e;
+       }
+
+
+       .menubar {
+           font-size: 30px;
+           color: orange;
+           cursor: pointer;
+           position: absolute;
+           top: 45px;
+           left: 20px;
+       }
+
+       .content {
+           margin-left: 0;
+           transition: margin-left 0.3s;
+       }
+
+
+       .top-nav {
+           display: flex;
+           justify-content: space-between;
+           background-color: white;
+           padding: 20px;
+           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+           width: 1800px;
+       }
+
+       .top-nav h1{
+        margin-left: 35px;
+        font-size: 40px;
+        margin-top: 20px;
+        padding: 0px;
+        font-family: 'nunito';
+       }
+
+
+       .icons i {
+           font-size: 24px;
+           margin-left: 15px;
+           color: #031d44;
+           cursor: pointer;
+           margin: 20px;
+       }
+
+       .icons{
+        margin-right: 150px;
+       }
+
+       .dropdown {
+           position: relative;
+           display: inline-block;
+       }
+
+
+       .dropdown-content {
+           display: none;
+           position: absolute;
+           background-color: white;
+           box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+           z-index: 1;
+       }
+
+
+       .dropdown-content a {
+           color: white;
+           padding: 12px 16px;
+           text-decoration: none;
+           display: block;
+           background-color: black;
+           font-family: 'Times New Roman';
+       }
+
+
+       .dropdown-content a:hover {
+           background-color: grey;
+       }
+
+
+       .dropdown:hover .dropdown-content {
+           display: block;
+       }
+
+
+       .dashboard-grid {
+           display: grid;
+           grid-template-columns: 1150px 650px;
+           gap: 20px;
+           padding: 20px;
+       }
+
+
+       .dashboard-section {
+           background-color: white;
+           padding: 20px;
+           border-radius: 10px;
+           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+       }
+
+
+       canvas {
+           display: block;
+           margin: 0 auto;
+           max-width: 100%;
+       }
+
+
+       #line-chart {
+           width: 1150px;
+           height: 500px;
+       }
+
+
+       #pie-chart {
+           width: 650px;
+           height: 500px;
+       }
+
+
+       table {
+           width: 100%;
+           border-collapse: collapse;
+           margin-top: 10px;
+           text-align: center;
+       }
+
+
+       th, td {
+           padding: 12px;
+           border-bottom: 1px solid #ddd;
+       }
+
+
+       th {
+           background-color: #031d44;
+           color: white;
+       }
+
+
+       tr:hover {
+           background-color: #f1f1f1;
+       }
+
+
+       .footer {
+           text-align: center;
+           padding: 20px;
+           color: #bdc3c7;
+       }
+   </style>
+</head>
+<body>
+
+   <div class="sidebar" id="sidebar">
+       <a href="#">Dashboard</a>
+       <a href="#">Analytics</a>
+       <a href="#">Reports</a>
+       <a href="index.html" onclick="logout()">Sign Out</a>
+   </div>
+
+   <div class="content" id="content">
+       <i class="fas fa-bars menubar" onclick="toggleSidebar()"></i>
+
+
+       <div class="top-nav">
+           <h1>KPI Dashboard</h1>
+           <div class="icons">
+               <div class="dropdown">
+                   <i class="fas fa-user"></i>
+                   <div class="dropdown-content">
+                       <a href="https://www.linkedin.com/in/daivik-awasthi/">Name: Daivik Awasthi(Linkedin)</a>
+                       <a href="mailto:daivikawasthi.01@gmail.com">Email: daivikawasthi.01@gmail.com(mailto)</a>
+                   </div>
+               </div>
+               <div class="dropdown">
+                   <i class="fas fa-flag"></i>
+                   <div class="dropdown-content">
+                       <a href="#">English</a>
+                       <a href="#">Hindi</a>
+                       <a href="#">Urdu</a>
+                       <a href="#">French</a>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+
+       <div class="dashboard-grid">
+        
+           <div class="dashboard-section">
+               <h2>Websocket Data(Line Chart)</h2>
+               <canvas id="line-chart"></canvas>
+           </div>
+
+           <div class="dashboard-section">
+               <h2>Analytics (Pie Chart)</h2>
+               <canvas id="pie-chart"></canvas>
+           </div>
+
+           <div class="dashboard-section">
+               <h2>Recent Numbers</h2>
+               <table>
+                   <thead>
+                       <tr>
+                           <th>Index</th>
+                           <th>Value</th>
+                       </tr>
+                   </thead>
+                   <tbody id="data-table"></tbody>
+               </table>
+           </div>
+
+           <div class="dashboard-section">
+               <h2>Coming Soon</h2>
+               <p>I will add this when I make it to GDSC NSUT xD</p>
+           </div>
+       </div>
+   </div>
+
+
+   <script>
+
+       function toggleSidebar() {
+           const sidebar = document.getElementById('sidebar');
+           const content = document.getElementById('content');
+           if (sidebar.style.left === '-250px') {
+               sidebar.style.left = '0';
+               content.style.marginLeft = '250px';
+           } else {
+               sidebar.style.left = '-250px';
+               content.style.marginLeft = '0';
+           }
+       }
+
+
+       function logout() {
+           alert("Fir se login karo :)");
+           location.reload(); 
+       }
+
+
+       const lineCtx = document.getElementById('line-chart').getContext('2d');
+       const pieCtx = document.getElementById('pie-chart').getContext('2d');
+
+
+       const lineChart = new Chart(lineCtx, {
+           type: 'line',
+           data: {
+               labels: [],
+               datasets: [{
+                   label: 'Real-Time Data',
+                   data: [],
+                   borderColor: '#36A2EB',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+               }]
+           },
+           options: { scales: { y: { beginAtZero: true } } }
+       });
+
+
+       const pieChart = new Chart(pieCtx, {
+           type: 'pie',
+           data: {
+               labels: ['0-2', '3-5', '6-10'],
+               datasets: [{
+                   data: [0, 0, 0], 
+                   backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+               }]
+           },
+           options: {
+               maintainAspectRatio: true,
+               responsive: true,
+           }
+       });
+
+
+       let globalIndex = 0; 
+       let lowCount = 0, mediumCount = 0, highCount = 0; 
+
+       const socket = io('https://data.gdscnsut.com');
+  
+       socket.on('random_number', function(data) {
+           const value = data.number;
+           globalIndex++;
+
+
+           lineChart.data.labels.push(globalIndex);
+           lineChart.data.datasets[0].data.push(value);
+           lineChart.update();
+
+
+           const row = `<tr><td>${globalIndex}</td><td>${value}</td></tr>`;
+           document.getElementById('data-table').insertAdjacentHTML('beforeend', row);
+
+
+           if (lineChart.data.labels.length > 10) {
+               lineChart.data.labels.shift();
+               lineChart.data.datasets[0].data.shift();
+               document.getElementById('data-table').deleteRow(0);
+           }
+
+           if (value < 3) {
+               lowCount++;
+           } else if (value < 6) {
+               mediumCount++;
+           } else {
+               highCount++;
+           }
+
+           pieChart.data.datasets[0].data = [lowCount, mediumCount, highCount];
+           pieChart.update();
+       });
+
+       socket.on('pie_data', function(data) {
+           pieChart.data.labels = data.labels;
+           pieChart.data.datasets[0].data = data.values;
+           pieChart.update();
+       });
+   </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,126 @@
+/* Global Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7fafc;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.hidden {
+    display: none;
+}
+
+.dashboard-header {
+    background-color: #4A5568;
+    padding: 20px;
+    color: #fff;
+    text-align: center;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+}
+
+.btn-primary, .btn-logout {
+    padding: 10px 20px;
+    background-color: #4299E1;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #EDF2F7;
+    border-bottom: 1px solid #CBD5E0;
+}
+
+.chart-container {
+    margin: 20px;
+    width: 90%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.chart-title {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#random-chart {
+    width: 100%;
+    height: 400px; /* Define a height for the chart */
+}
+
+.login-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #E2E8F0;
+}
+
+.login-box {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #CBD5E0;
+}
+
+.dashboard-container {
+    z-index: 100;
+    position: relative;
+    display: block !important; /* Force visibility */
+}
+
+@media screen and (max-width: 768px) {
+    .filter-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dashboard-title {
+        font-size: 1.5rem;
+    }
+
+    .btn-primary, .btn-logout {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    #random-chart {
+        height: 300px; /* Adjust height for smaller screens */
+    }
+}

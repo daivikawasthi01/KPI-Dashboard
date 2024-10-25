@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Functionality: KPI Dashboard</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'nunito', sans-serif;
+            background-color: #f4f5f7;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .login-container h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: #031d44;
+        }
+
+        .login-container input[type="text"], 
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .login-container button {
+            background-color: #031d44;
+            color: #ecf0f1;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #34495e;
+        }
+
+        .login-container .forgot-password {
+            margin-top: 15px;
+            color: #bdc3c7;
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container" id="login-container">
+        <h1>Login</h1>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <span class="forgot-password" onclick="forgotPassword()">Forgot password?</span>
+    </div>
+
+    <script>
+
+        window.onload = function() {
+            const loginContainer = document.getElementById('login-container');
+            loginContainer.style.opacity = 1;
+            loginContainer.style.transform = 'translateY(0)';
+        };
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'password') {
+                transitionToDashboard();
+            } else {
+                document.getElementById('password').value = ''; 
+            }
+        }
+
+        function transitionToDashboard() {
+            const loginContainer = document.getElementById('login-container');
+            loginContainer.style.opacity = 0;
+            loginContainer.style.transform = 'translateY(50px)';
+            setTimeout(() => {
+                window.location.href = 'dashboard.html'; 
+            }, 500);
+        }
+
+        function forgotPassword() {
+            alert('404 Security not found xD. username: admin, password: password');
+        }
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+
+</body>
+</html>
